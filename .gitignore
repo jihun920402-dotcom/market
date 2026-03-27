@@ -1,0 +1,22 @@
+# IDE (IntelliJ, VS Code)
+.idea/
+.vscode/
+*.iml
+
+# Java / Maven
+backend/target/
+backend/.mvn/
+backend/*.jar
+
+# Node / React
+frontend/node_modules/
+frontend/build/
+frontend/.env
+
+# OS / Log
+.DS_Store
+Thumbs.db
+*.log
+
+# 개인 PC 절대 경로 이미지 폴더 (중요)
+backend/uploads/
