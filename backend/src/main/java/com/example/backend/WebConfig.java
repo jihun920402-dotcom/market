@@ -6,12 +6,16 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
+    // WebConfig.java
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // 경로의 'uploasds'를 'uploads'로 수정했습니다.
-        String absolutePath = "file:///C:/Users/Administrator/Desktop/정지훈/Microsoft VS Code/market/backend/uploads/";
+    // 이동한 경로: C:/Users/Administrator/Desktop/정지훈/리엑트/market/backend/uploads/
+        String absolutePath = "file:///C:/Users/Administrator/Desktop/정지훈/리엑트/market/backend/uploads/";
 
         registry.addResourceHandler("/images/**")
                 .addResourceLocations(absolutePath);
-    }
+        }
+
+
 }

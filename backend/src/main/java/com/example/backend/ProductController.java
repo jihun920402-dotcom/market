@@ -17,7 +17,8 @@ public class ProductController {
     private final ProductRepository productRepository;
     
     // 프로젝트 루트 폴더 아래 uploads 폴더 지정
-    private String uploadPath = "C:/Users/Administrator/Desktop/정지훈/Microsoft VS Code/market/backend/uploads/";
+   
+   private String uploadPath = System.getProperty("user.dir") + File.separator + "uploads" + File.separator;
 
     @GetMapping
     public List<Product> getProducts() {
