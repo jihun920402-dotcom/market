@@ -13,6 +13,16 @@ public class UserController {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
 
+    @PostMapping("/register")
+    public User register(@RequestBody Map<String, String> body) {
+        String username = body.get("username");
+        String password = body.get("password");
+        if (username == null || username.isBlank()) throw new RuntimeException("아이디를 입력해주세요.");
+        if (password == null || password.isBlank()) throw new RuntimeException("비밀번호를 입력해주세요.");
+        if (userRepository.findByUsername(username).isPresent()) throw new RuntimeException("이미 사용 중인 아이디입니다.");
+        return userRepository.save(new User(null, username, password, "USER"));
+    }
+
     @PostMapping("/login")
     public User login(@RequestBody Map<String, String> credentials) {
         String username = credentials.get("username");
@@ -21,29 +31,31 @@ public class UserController {
                 .orElseThrow(() -> new RuntimeException("아이디 또는 비밀번호 오류"));
     }
 
-  @PostMapping("/setup")
-public String setup() {
-    userRepository.deleteAll();
-    productRepository.deleteAll();
+    @PostMapping("/setup")
+    public String setup() {
+        userRepository.deleteAll();
+        productRepository.deleteAll();
 
-    userRepository.save(new User(null, "admin", "1234", "ADMIN"));
-    userRepository.save(new User(null, "user1", "1234", "USER"));
-    userRepository.save(new User(null, "user2", "1234", "USER"));
+        userRepository.save(new User(null, "admin", "1234", "ADMIN"));
+        userRepository.save(new User(null, "user1", "1234", "USER"));
+        userRepository.save(new User(null, "user2", "1234", "USER"));
 
-    // 파일 확장자(jpg)가 실제 파일과 일치하는지 꼭 확인하세요!
-    productRepository.save(createExampleProduct("빈티지 자전거", 150000L, "admin", "서울 강남구", "bike.jpg"));
-    productRepository.save(createExampleProduct("중고 아이패드", 450000L, "user1", "대구 중구", "ipad.jpg"));
-    productRepository.save(createExampleProduct("캠핑용 의자", 30000L, "user2", "서울 마포구", "chair.jpg"));
+        productRepository.save(createExampleProduct("빈티지 자전거", 150000L, "admin", "서울 강남구", "bike.jpg", Category.OTHER, "상태 양호한 빈티지 자전거입니다. 직거래 선호."));
+        productRepository.save(createExampleProduct("중고 아이패드", 450000L, "user1", "대구 중구", "ipad.jpg", Category.ELECTRONICS, "아이패드 5세대, 케이스 포함. 배터리 90% 이상."));
+        productRepository.save(createExampleProduct("캠핑용 의자", 30000L, "user2", "서울 마포구", "chair.jpg", Category.FURNITURE, "캠핑 2회 사용. 접이식, 가방 포함."));
 
-    return "계정과 예시 상품 3개가 생성되었습니다. (폴더: uploads)";
-}
-    private Product createExampleProduct(String name, Long price, String seller, String address, String imageName) {
+        return "계정과 예시 상품 3개가 생성되었습니다. (폴더: uploads)";
+    }
+
+    private Product createExampleProduct(String name, Long price, String seller, String address, String imageName, Category category, String description) {
         Product p = new Product();
         p.setName(name);
         p.setPrice(price);
         p.setSeller(seller);
         p.setAddress(address);
-        p.setImageName(imageName); // DB에 저장될 파일명
+        p.setImageName(imageName);
+        p.setCategory(category);
+        p.setDescription(description);
         return p;
     }
 }

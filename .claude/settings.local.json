@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Administrator\\\\Desktop\\\\정지훈\\\\react\\\\market\" -Force)",
+      "Bash(Select-Object Name)",
+      "PowerShell(java *)",
+      "PowerShell(winget install *)",
+      "PowerShell(netstat *)",
+      "PowerShell(Get-Process *)",
+      "PowerShell(Invoke-RestMethod -Uri \"http://localhost:8081/api/auth/setup\" -Method POST 2>&1)",
+      "PowerShell(taskkill *)"
+    ]
+  }
+}
