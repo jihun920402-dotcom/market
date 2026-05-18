@@ -12,11 +12,10 @@ Fullstack used-goods marketplace (중고마켓) — React frontend + Spring Boot
 
 | 환경 | 프로젝트 경로 |
 |------|-------------|
-| 🏠 집 컴퓨터 | `C:\Users\jihun\OneDrive\Desktop\project\market` |
-| 🏢 외부 컴퓨터 | `C:\Users\Administrator\Desktop\정지훈\react\market` |
+| 🏠 집 컴퓨터 | `C:\Users\jihun\Desktop\project\resellmarket` |
+| 🏢 외부 컴퓨터 | `C:\Users\Administrator\Desktop\정지훈\react\resellmarket` |
 
 > Claude Code에게 작업 시작 시 "지금 집이야" 또는 "지금 외부야" 라고 알려줄 것.
-> WebConfig.java는 상대경로로 설정되어 있으므로 경로 수정 불필요.
 
 ## Commands
 
@@ -30,7 +29,7 @@ npm test         # Run tests
 
 ### Backend (`backend/`)
 ```powershell
-$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-17.0.19.10-hotspot"
+$env:JAVA_HOME = "C:\Program Files\Java\jdk-17"
 .\mvnw.cmd clean spring-boot:run     # Dev server on http://localhost:8081 (처음 또는 오류 시 clean 포함)
 .\mvnw.cmd spring-boot:run           # 이후 빠른 실행
 .\mvnw.cmd test                      # Run tests
@@ -53,25 +52,26 @@ $env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-17.0.19.10-hotspot"
 ## Architecture
 
 ### Frontend (`frontend/src/`)
-- **Single-file SPA**: All UI logic lives in `App.js` — no routing library. Navigation is state-driven (`useState`).
-- **No global state**: Component-local `useState`/`useEffect` only. No Redux, no Context.
+- **Single-file SPA**: 모든 UI 로직이 `App.js` 한 파일에 존재. 라우팅 라이브러리 없음, state 기반 내비게이션.
+- **No global state**: 컴포넌트 로컬 `useState`/`useEffect`만 사용. Redux, Context 없음.
 - **HTTP**: Axios, `BASE_URL = 'http://localhost:8081'` at top of `App.js`.
-- **Styling**: Inline styles throughout; global keyframe CSS injected via `useEffect` + `document.createElement('style')`. No CSS framework.
-- **Icons**: `IC` object at top of `App.js` — 18 inline SVG React components (Heroicons-style, stroke-based). No icon library dependency.
-- **Key state**: `user` (persisted to `localStorage`), `items`, `wishedIds` (Set), `selectedItem` (modal), `toasts`, `loading`, `searchInput`/`searchKeyword` (debounced 300ms), `filterCategory`, `sortOrder`.
-- **Login persistence**: `user` initialized from `localStorage` via lazy initializer; written on login, cleared on logout.
+- **Styling**: 인라인 스타일 전용. `buildCSS(dark)` 함수가 다크모드 여부에 따라 CSS 문자열을 생성하고, `useEffect`로 `<style>` 태그에 주입. CSS 프레임워크 없음.
+- **Theme**: `MINT = '#00C2A8'`, `NAVY = '#0F2B4A'` 상수 + `C` 객체(다크/라이트 컬러 맵)를 컴포넌트 내에서 사용.
+- **Icons**: `IC` 객체 — 20개 인라인 SVG React 컴포넌트 (Heroicons-style, stroke-based). 아이콘 라이브러리 의존성 없음.
+- **Key state**: `dark`(다크모드), `user`(localStorage 영속), `items`, `wishedIds`(Set), `selectedItem`(모달), `toasts`, `loading`, `searchInput`/`searchKeyword`(300ms debounce), `filterCategory`, `sortOrder`.
+- **Layout**: 상단 카테고리 탭바 (사이드바 없음). 카드 이미지는 1:1 정사각형(`paddingBottom: '100%'` 기법). 호버 시 설명 슬라이드업 오버레이(`.card-overlay`). 판매완료 상품은 오버레이 대신 흑백 필터(`.img-sold`).
 
 ### Backend (`backend/src/main/java/com/example/backend/`)
-- **Spring Boot 3.2.5 / Java 17** with H2 in-memory DB (`spring.jpa.hibernate.ddl-auto=update`). Schema is recreated on restart; no migrations.
+- **Spring Boot 3.2.5 / Java 17** with H2 in-memory DB (`spring.jpa.hibernate.ddl-auto=update`). 재시작 시 스키마 초기화.
 - **Entities**:
   - `User` — id, username, password, role (`USER`/`ADMIN`)
   - `Product` — id, name, price, seller, address, imageName, description (`@Lob`), category (`Category` enum), status (`ProductStatus` enum, default `SELLING`), wishCount, createdAt (`@PrePersist`)
   - `Wish` — id, userId, productId (찜 관계 테이블)
   - `Category` enum — `ELECTRONICS`, `FURNITURE`, `CLOTHING`, `OTHER`
   - `ProductStatus` enum — `SELLING`, `SOLD`
-- **File uploads**: Images saved to `backend/uploads/` via `System.getProperty("user.dir")` (relative path — works on any PC). Served at `/images/**` via `WebConfig`. The `uploads/` folder must exist; it is not auto-created on first boot unless a file is uploaded.
-- **Auth**: Username/password checked against DB rows; no tokens, no hashing.
-- **Error handling**: `GlobalExceptionHandler` converts `RuntimeException` → HTTP 400 with `{ "message": "..." }`.
+- **File uploads**: 이미지는 `resellmarket/uploads/`에 저장. `ProductController`와 `WebConfig` 모두 `Paths.get(user.dir).getParent().resolve("uploads")`로 backend 상위 폴더를 가리킴. 샘플 이미지(`bike.jpg`, `ipad.jpg`, `chair.jpg`)는 `uploads/`에 미리 존재.
+- **Auth**: DB 조회 방식 (토큰/해싱 없음).
+- **Error handling**: `GlobalExceptionHandler`가 `RuntimeException` → HTTP 400 `{ "message": "..." }` 변환.
 
 ### Key API Endpoints
 | Method | Path | Purpose |
@@ -95,22 +95,21 @@ $env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-17.0.19.10-hotspot"
 | user2 | 1234 | USER |
 
 ## Known Constraints
-- `backend/uploads/` 폴더가 없으면 이미지 업로드 시 자동 생성됨 (`mkdirs()` 호출). 단 폴더 없을 때 서빙은 불가 — 미리 만들어두는 것이 안전.
-- H2 is in-memory; all data is lost on backend restart. Reseed via `POST /api/auth/setup` (기존 데이터 전체 삭제 후 재생성).
-- Passwords are stored as plain text — no hashing or token-based auth.
-- CORS is `@CrossOrigin(origins = "http://localhost:3000")` on each controller (not global config).
-- `GET /api/items` search/filter/sort is done in Java stream after `findAll()` — not a DB query. Fine for small data sets.
+- H2 인메모리 DB — 백엔드 재시작 시 데이터 초기화. `POST /api/auth/setup`으로 재시드.
+- `GET /api/items` 검색/필터/정렬은 `findAll()` 후 Java stream 처리 — DB 쿼리 아님. 소규모 데이터에만 적합.
+- CORS는 각 컨트롤러에 `@CrossOrigin(origins = "http://localhost:3000")` 개별 선언 (글로벌 설정 아님).
+- Passwords are stored as plain text.
 
 ## Troubleshooting
 
 ### 포트 충돌 시
-```bash
+```powershell
 netstat -ano | findstr :8081
 taskkill /PID <PID번호> /F
 ```
 
 ### 프론트엔드 react-scripts 오류 시
-```bash
+```powershell
 cd frontend
 npm install
 npm start

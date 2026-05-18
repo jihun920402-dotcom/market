@@ -13,7 +13,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // 실행 위치 기준 상대경로 → 어느 PC에서도 자동으로 잡힘
-        Path uploadPath = Paths.get("uploads").toAbsolutePath();
+        Path uploadPath = Paths.get(System.getProperty("user.dir")).getParent().resolve("uploads").toAbsolutePath();
         String absolutePath = "file:///" + uploadPath.toString().replace("\\", "/") + "/";
 
         registry.addResourceHandler("/images/**")

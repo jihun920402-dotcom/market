@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -16,7 +17,7 @@ public class ProductController {
 
     private final ProductRepository productRepository;
 
-    private String uploadPath = System.getProperty("user.dir") + File.separator + "uploads" + File.separator;
+    private String uploadPath = Paths.get(System.getProperty("user.dir")).getParent().resolve("uploads").toString() + File.separator;
 
     @GetMapping
     public List<Product> getProducts(
